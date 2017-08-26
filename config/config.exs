@@ -10,7 +10,7 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :metexopt, key: :value
+config :metexopt, api_key: System.get_env("API_KEY")
 #
 # and access this configuration in your application as:
 #
