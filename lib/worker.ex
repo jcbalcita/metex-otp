@@ -30,6 +30,10 @@ defmodule Metexopt.Worker do
     {:reply, stats, stats}
   end
 
+  def handle_cast(:reset_stats, _stats) do
+    {:noreply, %{}}
+  end
+
   def update_stats(old_stats, location) do
     case Map.has_key?(old_stats, location) do
       true  -> Map.update(old_stats, location, &(&1 + 1))
@@ -39,6 +43,10 @@ defmodule Metexopt.Worker do
 
   def get_stats(pid) do
     GenServer.call(pid, :get_stats)
+  end
+
+  def reset_stats(pid) do
+    GenServer.cast(pid, :reset_stats)
   end
 
   defp temperature_of(location) do
