@@ -18,9 +18,9 @@ defmodule Metexopt.Worker do
 
   def handle_call({:location, location}, _from, stats) do
     case temperature_of(location) do
-      {:ok, location} ->
+      {:ok, temp} ->
         new_stats = update_stats(stats, location)
-        {:reply, "#{temp}", new_stats}
+        {:reply, "#{location}: #{temp}", new_stats}
       _ ->
         {:reply, :error, stats}
     end
@@ -36,7 +36,7 @@ defmodule Metexopt.Worker do
 
   def update_stats(old_stats, location) do
     case Map.has_key?(old_stats, location) do
-      true  -> Map.update(old_stats, location, &(&1 + 1))
+      true  -> Map.update!(old_stats, location, &(&1 + 1))
       false -> Map.put(old_stats, location, 1)
     end
   end
@@ -69,7 +69,8 @@ defmodule Metexopt.Worker do
   end
 
   defp url_for(location) do
-    "http://api.openweathermbap.org/data/2.5/weather?q=#{location}&APPID=#{api_key()}"
+    location = URI.encode location
+    "http://api.openweathermap.org/data/2.5/weather?q=#{location}&appid=#{api_key()}"
   end
 
   defp api_key do
