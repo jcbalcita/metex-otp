@@ -12,6 +12,11 @@ defmodule Metexopt.Worker do
     {:ok, %{}}
   end
 
+  def terminate(reason, stats) do
+    IO.puts "server terminated because: #{inspect reason}" inspect stats
+    :ok
+  end
+
   def get_temperature(pid, location) do
     GenServer.call(pid, {:location, location})
   end
@@ -34,6 +39,10 @@ defmodule Metexopt.Worker do
     {:noreply, %{}}
   end
 
+  def handle_cast(:stop, stats) do
+    {:stop, :normal, stats}
+  end
+
   def update_stats(old_stats, location) do
     case Map.has_key?(old_stats, location) do
       true  -> Map.update!(old_stats, location, &(&1 + 1))
@@ -47,6 +56,10 @@ defmodule Metexopt.Worker do
 
   def reset_stats(pid) do
     GenServer.cast(pid, :reset_stats)
+  end
+
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
   end
 
   defp temperature_of(location) do
