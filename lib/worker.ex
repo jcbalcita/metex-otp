@@ -43,6 +43,11 @@ defmodule Metexopt.Worker do
     {:stop, :normal, stats}
   end
 
+  def handle_info(msg, stats) do
+    IO.puts "Received: #{inspect msg}"
+    {:noreply, stats}
+  end
+
   def update_stats(old_stats, location) do
     case Map.has_key?(old_stats, location) do
       true  -> Map.update!(old_stats, location, &(&1 + 1))
