@@ -4,8 +4,10 @@ defmodule Metexopt.Worker do
   """
   use GenServer
 
+  @name MW
+
   def start_link(opts \\ []) do
-    GenServer.start(__MODULE__, :ok, opts)
+    GenServer.start(__MODULE__, :ok, opts ++ [name: MW])
   end
 
   def init(:ok) do
@@ -13,12 +15,13 @@ defmodule Metexopt.Worker do
   end
 
   def terminate(reason, stats) do
-    IO.puts "server terminated because: #{inspect reason}" inspect stats
+    IO.puts "server terminated because: #{inspect reason}"
+      inspect stats
     :ok
   end
 
-  def get_temperature(pid, location) do
-    GenServer.call(pid, {:location, location})
+  def get_temperature(location) do
+    GenServer.call(@name, {:location, location})
   end
 
   def handle_call({:location, location}, _from, stats) do
@@ -55,16 +58,16 @@ defmodule Metexopt.Worker do
     end
   end
 
-  def get_stats(pid) do
-    GenServer.call(pid, :get_stats)
+  def get_stats do
+    GenServer.call(@name, :get_stats)
   end
 
-  def reset_stats(pid) do
-    GenServer.cast(pid, :reset_stats)
+  def reset_stats do
+    GenServer.cast(@name, :reset_stats)
   end
 
-  def stop(pid) do
-    GenServer.cast(pid, :stop)
+  def stop do
+    GenServer.cast(@name, :stop)
   end
 
   defp temperature_of(location) do
