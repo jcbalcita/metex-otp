@@ -3,7 +3,7 @@ defmodule Metexopt.Mixfile do
 
   def project do
     [
-      app: :metexopt,
+      app: :metexotp,
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,

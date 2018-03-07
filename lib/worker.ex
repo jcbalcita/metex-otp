@@ -1,4 +1,4 @@
-defmodule Metexopt.Worker do
+defmodule Metexotp.Worker do
   @moduledoc """
   Implementation of weather app using Genserver
   """
@@ -8,7 +8,7 @@ defmodule Metexopt.Worker do
 
   @doc """
   Starts the process and links the server process to the parent process
-  When called, invokes `Metexopt.init/1` and waits until `Metexopt.init/1` has returned before returning
+  When called, invokes `Metexotp.init/1` and waits until `Metexotp.init/1` has returned before returning
   """
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, :ok, opts)
@@ -18,9 +18,14 @@ defmodule Metexopt.Worker do
   Makes synchronous request to the server
   `Genserver.call/3` expects a `handle_call/3` and invokes it accordingly
   """
-  def get_temperature(pid, location) do
-    GenServer.call(pid, {:location, location})
-  end
+  def get_temperature(pid, location), do: GenServer.call(pid, {:location, location})
+
+  @doc """
+  Makes call to get stats by invoking `handle_call/3`
+  """
+  def get_stats(pid), do: GenServer.call(pid, :get_stats)
+
+  def reset_stats(pid), do: GenServer.cast(pid, :reset_stats)
 
 
   # SERVER API
@@ -48,9 +53,13 @@ defmodule Metexopt.Worker do
         new_stats = update_stats(stats, location)
         {:reply, "#{location}: #{temp}°C", new_stats}
       _ ->
-        {:reply, :error, stats}
+        {:reply, "Unable to find temperature for #{location}", stats}
     end
   end
+
+  def handle_call(:get_stats, _from, stats), do: {:reply, stats, stats}
+
+  def handle_cast(:reset_stats, _stats), do: {:noreply, %{}}
 
 
   # SERVER CALLBACKS
@@ -90,10 +99,10 @@ defmodule Metexopt.Worker do
 
   defp url_for(location) do
     location = URI.encode(location)
-    "http://api.openweathermap.org/data/2.5/weather?q=#{location}&appid=#{api_key}"
+    "http://api.openweathermap.org/data/2.5/weather?q=#{location}&appid=#{api_key()}"
   end
 
-  def api_key, do: Application.get_env(:metexopt, :api_key)
+  def api_key, do: Application.get_env(:metexotp, :api_key)
 
   defp update_stats(old_stats, location) do
     case Map.has_key?(old_stats, location) do
